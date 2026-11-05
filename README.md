@@ -6,7 +6,7 @@ This is a starter repository, not a snapshot of either machine. It contains no c
 
 ## Layout
 
-- `daemon/shared.json`: common daemon settings. Starts with only the schema and version; add settings after reviewing both hosts.
+- `daemon/shared.json`: common daemon settings, taken from `hampusstrawberry`'s `~/.paseo/config.json` on 2026-11-05 minus host-specific keys (`daemon.listen`, `daemon.relay`, `daemon.cors`). Not yet reviewed against `deathstar`.
 - `hosts/overrides.example.json`: template for machine-specific settings. Copy it to `hosts/deathstar.local.json` or `hosts/hampusstrawberry.local.json`; these local files are ignored by Git.
 - `.paseo/triggers/`: version-controlled Hub triggers, separate from local daemon settings.
 
@@ -41,7 +41,7 @@ Do not copy the entire daemon home between machines. Each daemon should keep its
 
 Hub configuration is independent of daemon-local `config.json`. A trigger targets a daemon by slug and uses an absolute working directory on that machine; Hub does not clone the repository for you.
 
-The existing `chat-trigger` in Hub is unchanged. No deployment or GitHub auto-sync has been configured by this repository.
+The live Hub `chat-trigger` is mirrored in `.paseo/triggers/chat-trigger.yml`. Hub itself was not changed, and no deployment or GitHub auto-sync is configured.
 
 ## References
 

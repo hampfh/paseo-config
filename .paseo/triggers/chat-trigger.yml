@@ -1,0 +1,32 @@
+name: chat-trigger
+enabled: true
+on:
+  slack.mention:
+    connection: strawberry-slack
+    filters:
+      from_users:
+        - U0B8DR6NN4D
+run:
+  target:
+    daemon: hampusstrawberry
+    cwd: /Users/hampushallkvist/dev/paseo-triggers
+  agent:
+    provider: claude
+    model: claude-opus-5-5
+    mode: auto
+    thinkingOptionId: xhigh
+  continuation:
+    mode: new
+  max_runtime: 3h
+  idle_timeout: 10m
+  prompt: |-
+    Repository: https://github.com/dendrite-systems/reflect-mono
+
+    When hub.reply is available, use it for useful progress updates and your final user-facing response. Call hub.finish_execution once the request is complete.
+
+    Your are autonomous, therefore it is important that you enstill confidence with what you do and change, therefore always optimize for being concise and approach any problem from the most grug approach. You must also accompany each request with proof of work, usually through screenshots or videos.
+
+    When you have verified and tested the implementation, create a PR
+
+    Request:
+    ${{ paseo.prompt }}
