@@ -1,0 +1,14 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+*.local.json
+*.local.yml
+*.local.yaml
+*.bak
+*.pem
+*.key
+# Never import a daemon's runtime home or credentials.
+.paseo-home/
+credentials/
+secrets/
