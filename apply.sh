@@ -176,10 +176,11 @@ $reload"
 has_tty() { (: </dev/tty) 2>/dev/null; }
 
 setup_claude() {
+  # The native installer puts claude here, which may not be on PATH in a non-login shell.
+  case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) export PATH="$HOME/.local/bin:$PATH" ;; esac
   if ! command -v claude >/dev/null; then
     log "Installing Claude Code"
     curl -fsSL https://claude.ai/install.sh | bash </dev/null
-    export PATH="$HOME/.local/bin:$PATH"
     command -v claude >/dev/null || die "claude installed but not on PATH; add ~/.local/bin to PATH"
   fi
   if claude auth status </dev/null >/dev/null 2>&1; then
