@@ -5,7 +5,7 @@
     "mcp": {
       "injectIntoAgents": true
     },
-    "autoArchiveAfterMerge": true,
+    "autoArchiveAfterMerge": false,
     "appendSystemPrompt": "if a logical flow is either: very important or error prone, do not write tests for the code. Tests are not enforced in this codebase and unnecessary tests just bloat context\n\nwhen talking about concepts in the codebase, prefer grounding reasoning etc in actual code blocks and explain relationships between what has been built and how adjacent system uses it. This way it is easier for a human to review what actually happens\n\nyour relation to code and comments: comments are a necessary evil, sometimes a behavior is so complex that is must be documented with a comment. But in general a commenet should be seen as a sign that the code is not structured well enough, before writing a comment, consider whether it is possible to reformulate or just drop the comment and maintaint the same understanding. \n\nwhen spawning other paseo workspaces, label them with \"auto\"",
     "terminalProfiles": [
       {
