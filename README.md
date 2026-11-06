@@ -10,7 +10,26 @@ This is a starter repository, not a snapshot of either machine. It contains no c
 - `hosts/overrides.example.json`: template for machine-specific settings. Copy it to `hosts/deathstar.local.json` or `hosts/hampusstrawberry.local.json`; these local files are ignored by Git.
 - `.paseo/triggers/`: version-controlled Hub triggers, separate from local daemon settings.
 
-## Use on another machine
+## Apply to a machine
+
+One command, safe to re-run:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/hampfh/paseo-config/main/apply.sh | bash
+```
+
+It installs the `paseo` CLI if missing (needs Node.js), deep-merges `daemon/shared.json` into `~/.paseo/config.json` (repo settings win; host-only keys like `daemon.listen`, `relay`, auth are kept), validates the result, backs up the old file, then reloads or starts the daemon. Nothing is written when already in sync.
+
+```sh
+# preview only
+curl -fsSL https://raw.githubusercontent.com/hampfh/paseo-config/main/apply.sh | bash -s -- --dry-run
+# also enroll in Hub and grant hub.execute
+curl -fsSL https://raw.githubusercontent.com/hampfh/paseo-config/main/apply.sh | PASEO_HUB_API_KEY=paseo_pk_... bash
+```
+
+Options: `--host NAME` (also apply a committed `hosts/NAME.json`), `--restart`, `--no-start`, `--no-execute`. From a clone, `./apply.sh` uses the local files instead of downloading. Provider CLIs (`claude`, `codex`) still need installing and logging in per machine; pair the app with `paseo daemon pair`.
+
+## Use on another machine (manual)
 
 ```sh
 git clone git@github.com:hampfh/paseo-config.git ~/dev/paseo-config
@@ -29,7 +48,7 @@ paseo reload
 
 If reload reports settings that require a restart, run `paseo daemon restart` when it is safe to interrupt the daemon. Paseo must be installed on the machine where these commands run.
 
-There is no automatic merge or sync script in this starter. Git tracks reviewed common settings; applying them to each daemon is a separate step.
+`apply.sh` automates this merge.
 
 ## Keep out of Git
 
