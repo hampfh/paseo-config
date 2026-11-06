@@ -14,16 +14,21 @@
 #   --restart     Restart the daemon if a changed setting needs it
 #   --no-start    Do not start the daemon if it is stopped
 #   --no-execute  When connecting to Hub, do not grant hub.execute
+#   --no-providers  Skip installing and logging in to claude and codex
 #
 # Env: PASEO_HOME (default ~/.paseo), PASEO_CONFIG_REF (default main),
-#      PASEO_HUB_API_KEY / PASEO_HUB_URL (connect this daemon to Hub when the key is set)
+#      PASEO_HUB_API_KEY / PASEO_HUB_URL (connect this daemon to Hub when the key is set),
+#      OPENAI_API_KEY (log codex in with an API key instead of ChatGPT)
+#
+# Missing claude/codex CLIs are installed. Logins run interactively when a terminal is
+# available (they print a URL + code you can open on any device, so SSH works).
 
 set -euo pipefail
 
 main() {
   local repo_raw="https://raw.githubusercontent.com/hampfh/paseo-config/${PASEO_CONFIG_REF:-main}"
   local home="${PASEO_HOME:-$HOME/.paseo}"
-  local host="${PASEO_CONFIG_HOST:-}" dry_run=0 restart=0 start=1 execute=1
+  local host="${PASEO_CONFIG_HOST:-}" dry_run=0 restart=0 start=1 execute=1 providers=1
 
   while [ $# -gt 0 ]; do
     case "$1" in
@@ -32,7 +37,8 @@ main() {
       --restart) restart=1 ;;
       --no-start) start=0 ;;
       --no-execute) execute=0 ;;
-      -h|--help) sed -n '2,21p' "${BASH_SOURCE[0]:-/dev/null}" 2>/dev/null || true; exit 0 ;;
+      --no-providers) providers=0 ;;
+      -h|--help) sed -n '2,27p' "${BASH_SOURCE[0]:-/dev/null}" 2>/dev/null || true; exit 0 ;;
       *) die "unknown option: $1" ;;
     esac
     shift
@@ -126,6 +132,11 @@ $(printf '%s\n' "$invalid" | grep -v '^    at ')"
   fi
   [ "$dry_run" = 1 ] && exit 0
 
+  if [ "$providers" = 1 ]; then
+    setup_claude
+    setup_codex
+  fi
+
   if daemon_running "$home"; then
     if [ -n "$changes" ]; then
       local reload
@@ -158,8 +169,54 @@ $reload"
     hub_connect "$home" "$execute"
   fi
 
+  report_providers "$home"
   log "Done. Pair the Paseo app with: paseo daemon pair"
-  log "Provider CLIs (claude, codex) must be installed and logged in on this machine separately."
+}
+
+has_tty() { (: </dev/tty) 2>/dev/null; }
+
+setup_claude() {
+  if ! command -v claude >/dev/null; then
+    log "Installing Claude Code"
+    curl -fsSL https://claude.ai/install.sh | bash </dev/null
+    export PATH="$HOME/.local/bin:$PATH"
+    command -v claude >/dev/null || die "claude installed but not on PATH; add ~/.local/bin to PATH"
+  fi
+  if claude auth status </dev/null >/dev/null 2>&1; then
+    log "claude: logged in"
+  elif has_tty; then
+    log "claude: not logged in, starting login (open the URL on any device, paste the code back)"
+    claude auth login </dev/tty || warn "claude login did not complete; run: claude auth login"
+  else
+    warn "claude: not logged in and no terminal; run on this machine: claude auth login"
+  fi
+}
+
+setup_codex() {
+  if ! command -v codex >/dev/null; then
+    log "Installing Codex"
+    npm install -g @openai/codex </dev/null || die "npm install failed; try: sudo npm install -g @openai/codex"
+  fi
+  if codex login status </dev/null >/dev/null 2>&1; then
+    log "codex: logged in"
+  elif [ -n "${OPENAI_API_KEY:-}" ]; then
+    printenv OPENAI_API_KEY | codex login --with-api-key >/dev/null && log "codex: logged in with OPENAI_API_KEY" || warn "codex API key login failed"
+  elif has_tty; then
+    log "codex: not logged in, starting device login (open the URL on any device, enter the code)"
+    codex login --device-auth </dev/tty || warn "codex login did not complete; run: codex login --device-auth"
+  else
+    warn "codex: not logged in and no terminal; run on this machine: codex login --device-auth"
+  fi
+}
+
+# The daemon resolves provider binaries with its own PATH, so confirm it can see them.
+report_providers() {
+  local missing
+  missing="$(paseo daemon status --home "$1" --json </dev/null 2>/dev/null |
+    node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{console.log((JSON.parse(s).providers||[]).filter(p=>!p.available).map(p=>p.provider).join(" "))}catch{}})' || true)"
+  if [ -n "$missing" ]; then
+    warn "daemon cannot use: $missing. Check with: paseo provider diagnostic <name> (a daemon restart may be needed after install)"
+  fi
 }
 
 daemon_running() {
@@ -188,6 +245,7 @@ hub_connect() {
 }
 
 log() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
+warn() { printf '\033[1;33mwarning:\033[0m %s\n' "$*" >&2; }
 die() { printf '\033[1;31merror:\033[0m %s\n' "$*" >&2; exit 1; }
 
 main "$@"

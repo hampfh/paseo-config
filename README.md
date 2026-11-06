@@ -27,7 +27,9 @@ curl -fsSL https://raw.githubusercontent.com/hampfh/paseo-config/main/apply.sh |
 curl -fsSL https://raw.githubusercontent.com/hampfh/paseo-config/main/apply.sh | PASEO_HUB_API_KEY=paseo_pk_... bash
 ```
 
-Options: `--host NAME` (also apply a committed `hosts/NAME.json`), `--restart`, `--no-start`, `--no-execute`. From a clone, `./apply.sh` uses the local files instead of downloading. Provider CLIs (`claude`, `codex`) still need installing and logging in per machine; pair the app with `paseo daemon pair`.
+It also installs `claude` (official installer) and `codex` (npm) if missing, and logs them in when they aren't: both print a URL and code you can open on any device, so it works over SSH. Set `OPENAI_API_KEY` to log codex in with an API key instead. Without a terminal it only warns.
+
+Options: `--host NAME` (also apply a committed `hosts/NAME.json`), `--restart`, `--no-start`, `--no-execute`, `--no-providers`. From a clone, `./apply.sh` uses the local files instead of downloading. Pair the app with `paseo daemon pair`.
 
 ## Use on another machine (manual)
 
