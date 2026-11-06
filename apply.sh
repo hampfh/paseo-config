@@ -180,7 +180,8 @@ setup_claude() {
   case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) export PATH="$HOME/.local/bin:$PATH" ;; esac
   if ! command -v claude >/dev/null; then
     log "Installing Claude Code"
-    curl -fsSL https://claude.ai/install.sh | bash </dev/null
+    curl -fsSL https://claude.ai/install.sh -o "$tmp/claude-install.sh" || die "could not download the Claude Code installer"
+    bash "$tmp/claude-install.sh" </dev/null
     command -v claude >/dev/null || die "claude installed but not on PATH; add ~/.local/bin to PATH"
   fi
   if claude auth status </dev/null >/dev/null 2>&1; then
