@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Apply the shared Paseo config from github.com/hampfh/paseo-config to this machine.
 #
-#   curl -fsSL https://raw.githubusercontent.com/hampfh/paseo-config/main/apply.sh | bash
-#   curl -fsSL https://raw.githubusercontent.com/hampfh/paseo-config/main/apply.sh | bash -s -- --dry-run
-#   curl -fsSL https://raw.githubusercontent.com/hampfh/paseo-config/main/apply.sh | PASEO_HUB_API_KEY=paseo_pk_... bash
+#   curl -fsSL https://raw.githubusercontent.com/hampfh/paseo-config/main/config/apply.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/hampfh/paseo-config/main/config/apply.sh | bash -s -- --dry-run
+#   curl -fsSL https://raw.githubusercontent.com/hampfh/paseo-config/main/config/apply.sh | PASEO_HUB_API_KEY=paseo_pk_... bash
 #
 # Safe to re-run: settings in the repo win, every other key in config.json is kept,
 # and nothing is written when the result is unchanged.
@@ -26,7 +26,7 @@
 set -euo pipefail
 
 main() {
-  local repo_raw="https://raw.githubusercontent.com/hampfh/paseo-config/${PASEO_CONFIG_REF:-main}"
+  local repo_raw="https://raw.githubusercontent.com/hampfh/paseo-config/${PASEO_CONFIG_REF:-main}/config"
   local home="${PASEO_HOME:-$HOME/.paseo}"
   local host="${PASEO_CONFIG_HOST:-}" dry_run=0 restart=0 start=1 execute=1 providers=1
 
